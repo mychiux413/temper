@@ -201,7 +201,7 @@ class USBRead(object):
       self._parse_bytes('internal temperature', 2, 256.0, bytes, info)
       return info
 
-    if info['firmware'][:15] == 'TEMPerGold_V3.1':
+    if info['firmware'][:15] in [ 'TEMPerGold_V3.1', 'TEMPerGold_V3.3' ]:
       info['firmware'] = info['firmware'][:15]
       self._parse_bytes('internal temperature', 2, 100.0, bytes, info)
       return info
@@ -419,14 +419,20 @@ class Temper(object):
       except:
         print('Cannot parse hexadecimal id: %s' % args.force)
         return 1
-      self.forced_vendor_id = vendor_id;
-      self.forced_product_id = product_id;
+      self.forced_vendor_id = vendor_id
+      self.forced_product_id = product_id
 
     # By default, output the temperature and humidity for all known sensors.
     results = self.read(args.verbose)
     self.print(results, args.json)
     return 0
 
+def read_celsius(vendor_id, product_id, verbose=False):
+  temper = Temper()
+  temper.forced_vendor_id = int(vendor_id, 16)
+  temper.forced_product_id = int(product_id, 16)
+  results = temper.read(verbose)[0]['internal temperature']
+  return results
 
 def main():
   temper = Temper()
